@@ -1,11 +1,17 @@
 import 'package:flutter/material.dart';
 
+import 'database/database_helper.dart';
+import 'database/parcelle_repository.dart';
+import 'views/parcelles/parcelles_screen.dart';
+
 void main() {
   runApp(const AgrivisionApp());
 }
 
 class AgrivisionApp extends StatelessWidget {
-  const AgrivisionApp({super.key});
+  const AgrivisionApp({super.key, this.parcelleRepository});
+
+  final ParcelleRepository? parcelleRepository;
 
   @override
   Widget build(BuildContext context) {
@@ -35,13 +41,17 @@ class AgrivisionApp extends StatelessWidget {
           ),
         ),
       ),
-      home: const HomeScreen(),
+      home: HomeScreen(
+        parcelleRepository: parcelleRepository ?? DatabaseHelper.instance,
+      ),
     );
   }
 }
 
 class HomeScreen extends StatelessWidget {
-  const HomeScreen({super.key});
+  const HomeScreen({super.key, required this.parcelleRepository});
+
+  final ParcelleRepository parcelleRepository;
 
   @override
   Widget build(BuildContext context) {
@@ -92,7 +102,7 @@ class HomeScreen extends StatelessWidget {
             title: 'Carnet agricole',
             description:
                 'Gérez vos parcelles et gardez l’historique de vos activités.',
-            onTap: () => _openModule(context, 'Carnet agricole'),
+            onTap: () => _openCarnet(context),
           ),
           const SizedBox(height: 12),
           _FeatureCard(
@@ -127,6 +137,14 @@ class HomeScreen extends StatelessWidget {
     Navigator.of(context).push(
       MaterialPageRoute<void>(
         builder: (_) => ModulePlaceholderScreen(title: title),
+      ),
+    );
+  }
+
+  void _openCarnet(BuildContext context) {
+    Navigator.of(context).push<void>(
+      MaterialPageRoute<void>(
+        builder: (_) => ParcellesScreen(repository: parcelleRepository),
       ),
     );
   }
