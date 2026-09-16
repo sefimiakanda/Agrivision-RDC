@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../controllers/parcelle_provider.dart';
+import '../../database/database_helper.dart';
 import '../../models/parcelle.dart';
+import '../activites/activites_screen.dart';
 import 'parcelle_form_screen.dart';
 
 class ParcelleDetailsScreen extends StatelessWidget {
@@ -86,31 +88,35 @@ class ParcelleDetailsScreen extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 12),
-          Container(
-            padding: const EdgeInsets.all(20),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(20),
-              border: Border.all(color: const Color(0xFFE3EAE3)),
-            ),
-            child: const Column(
-              children: [
-                Icon(Icons.history, size: 40, color: Color(0xFF176B4D)),
-                SizedBox(height: 10),
-                Text(
-                  'L’historique des activités sera disponible ici.',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(color: Color(0xFF63746B)),
-                ),
-              ],
+          Card(
+            child: ListTile(
+              leading: const CircleAvatar(
+                backgroundColor: Color(0xFFE2F1E5),
+                child: Icon(Icons.history, color: Color(0xFF176B4D)),
+              ),
+              title: const Text('Voir l’historique'),
+              subtitle: const Text('Consultez les interventions réalisées.'),
+              trailing: const Icon(Icons.chevron_right),
+              onTap: () => _openActivities(context),
             ),
           ),
         ],
       ),
       floatingActionButton: FloatingActionButton.extended(
-        onPressed: null,
+        onPressed: () => _openActivities(context),
         icon: const Icon(Icons.add),
         label: const Text('Activité'),
+      ),
+    );
+  }
+
+  void _openActivities(BuildContext context) {
+    Navigator.of(context).push<void>(
+      MaterialPageRoute<void>(
+        builder: (_) => ActivitesScreen(
+          parcelle: parcelle,
+          repository: DatabaseHelper.instance,
+        ),
       ),
     );
   }

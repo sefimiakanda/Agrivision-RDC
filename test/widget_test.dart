@@ -2,6 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'package:agrivision_drc/database/parcelle_repository.dart';
 import 'package:agrivision_drc/main.dart';
+import 'package:agrivision_drc/models/activite.dart';
 import 'package:agrivision_drc/models/parcelle.dart';
 
 void main() {
@@ -57,4 +58,16 @@ class EmptyParcelleRepository implements ParcelleRepository {
 
   @override
   Future<void> deleteParcelle(int id) async {}
+
+  @override
+  Future<List<Activite>> getActivites(int parcelleId) async => const [];
+
+  @override
+  Future<Activite> createActivite(Activite activite) async => activite;
+
+  @override
+  Future<void> updateActivite(Activite activite) async {}
+
+  @override
+  Future<void> deleteActivite(int id) async {}
 }

@@ -2,6 +2,7 @@ import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
 
 import '../models/parcelle.dart';
+import '../models/activite.dart';
 import 'parcelle_repository.dart';
 
 class DatabaseHelper implements ParcelleRepository {
@@ -92,5 +93,49 @@ class DatabaseHelper implements ParcelleRepository {
   Future<void> deleteParcelle(int id) async {
     final database = await this.database;
     await database.delete('parcelles', where: 'id = ?', whereArgs: [id]);
+  }
+
+  @override
+  Future<List<Activite>> getActivites(int parcelleId) async {
+    final database = await this.database;
+    final rows = await database.query(
+      'activites',
+      where: 'parcelle_id = ?',
+      whereArgs: [parcelleId],
+      orderBy: 'date DESC',
+    );
+    return rows.map(Activite.fromMap).toList(growable: false);
+  }
+
+  @override
+  Future<Activite> createActivite(Activite activite) async {
+    final database = await this.database;
+    final id = await database.insert(
+      'activites',
+      activite.toMap()..remove('id'),
+    );
+    return activite.copyWith(id: id);
+  }
+
+  @override
+  Future<void> updateActivite(Activite activite) async {
+    final id = activite.id;
+    if (id == null) {
+      throw ArgumentError('Une activité à modifier doit avoir un identifiant.');
+    }
+
+    final database = await this.database;
+    await database.update(
+      'activites',
+      activite.toMap()..remove('id'),
+      where: 'id = ?',
+      whereArgs: [id],
+    );
+  }
+
+  @override
+  Future<void> deleteActivite(int id) async {
+    final database = await this.database;
+    await database.delete('activites', where: 'id = ?', whereArgs: [id]);
   }
 }
