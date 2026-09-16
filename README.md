@@ -1,17 +1,38 @@
-# agrivision_drc
+# Agrivision RDC
 
-A new Flutter project.
+Application Flutter d'aide à la gestion des cultures et au conseil agricole en République Démocratique du Congo.
 
-## Getting Started
+## Fonctionnalités disponibles
 
-This project is a starting point for a Flutter application.
+- Carnet agricole hors connexion avec SQLite : parcelles et activités.
+- Météo agricole : conditions actuelles et prévisions OpenWeatherMap.
+- Assistant agricole Gemini : à venir.
 
-A few resources to get you started if this is your first Flutter project:
+## Lancer l'application
 
-- [Learn Flutter](https://docs.flutter.dev/get-started/learn-flutter)
-- [Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Flutter learning resources](https://docs.flutter.dev/reference/learning-resources)
+Installer les dépendances puis lancer Flutter :
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+```powershell
+flutter pub get
+flutter run --dart-define=OPENWEATHER_API_KEY=votre_cle_openweathermap
+```
+
+La clé météo est injectée au lancement et n'est pas stockée dans le dépôt. Sans clé, l'écran météo affiche une erreur de configuration explicite.
+
+## Vérifications
+
+```powershell
+flutter analyze
+flutter test
+```
+
+## Structure principale
+
+```text
+lib/
+  controllers/   # Provider par domaine
+  database/      # Repository et SQLite
+  models/        # Modèles métier
+  services/      # APIs distantes
+  views/         # Écrans Flutter
+```

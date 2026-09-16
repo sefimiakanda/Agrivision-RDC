@@ -2,16 +2,25 @@ import 'package:flutter/material.dart';
 
 import 'database/database_helper.dart';
 import 'database/parcelle_repository.dart';
+import 'services/weather_service.dart';
+import 'views/meteo/weather_screen.dart';
 import 'views/parcelles/parcelles_screen.dart';
+
+const openWeatherApiKey = String.fromEnvironment('OPENWEATHER_API_KEY');
 
 void main() {
   runApp(const AgrivisionApp());
 }
 
 class AgrivisionApp extends StatelessWidget {
-  const AgrivisionApp({super.key, this.parcelleRepository});
+  const AgrivisionApp({
+    super.key,
+    this.parcelleRepository,
+    this.weatherService,
+  });
 
   final ParcelleRepository? parcelleRepository;
+  final WeatherService? weatherService;
 
   @override
   Widget build(BuildContext context) {
@@ -43,15 +52,22 @@ class AgrivisionApp extends StatelessWidget {
       ),
       home: HomeScreen(
         parcelleRepository: parcelleRepository ?? DatabaseHelper.instance,
+        weatherService:
+            weatherService ?? WeatherService(apiKey: openWeatherApiKey),
       ),
     );
   }
 }
 
 class HomeScreen extends StatelessWidget {
-  const HomeScreen({super.key, required this.parcelleRepository});
+  const HomeScreen({
+    super.key,
+    required this.parcelleRepository,
+    required this.weatherService,
+  });
 
   final ParcelleRepository parcelleRepository;
+  final WeatherService weatherService;
 
   @override
   Widget build(BuildContext context) {
@@ -113,7 +129,7 @@ class HomeScreen extends StatelessWidget {
             title: 'Météo agricole',
             description:
                 'Consultez les conditions et prévisions de votre ville.',
-            onTap: () => _openModule(context, 'Météo agricole'),
+            onTap: () => _openWeather(context),
           ),
           const SizedBox(height: 12),
           _FeatureCard(
@@ -145,6 +161,14 @@ class HomeScreen extends StatelessWidget {
     Navigator.of(context).push<void>(
       MaterialPageRoute<void>(
         builder: (_) => ParcellesScreen(repository: parcelleRepository),
+      ),
+    );
+  }
+
+  void _openWeather(BuildContext context) {
+    Navigator.of(context).push<void>(
+      MaterialPageRoute<void>(
+        builder: (_) => WeatherScreen(service: weatherService),
       ),
     );
   }

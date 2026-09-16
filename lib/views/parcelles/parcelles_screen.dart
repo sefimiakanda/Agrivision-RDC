@@ -72,9 +72,13 @@ class _ParcellesView extends StatelessWidget {
   }
 
   Future<void> _openForm(BuildContext context, {Parcelle? parcelle}) async {
+    final provider = context.read<ParcelleProvider>();
     await Navigator.of(context).push<void>(
       MaterialPageRoute<void>(
-        builder: (_) => ParcelleFormScreen(parcelle: parcelle),
+        builder: (_) => ChangeNotifierProvider.value(
+          value: provider,
+          child: ParcelleFormScreen(parcelle: parcelle),
+        ),
       ),
     );
   }
@@ -87,12 +91,16 @@ class _ParcelleCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final provider = context.read<ParcelleProvider>();
     return Card(
       child: InkWell(
         onTap: () {
           Navigator.of(context).push<void>(
             MaterialPageRoute<void>(
-              builder: (_) => ParcelleDetailsScreen(parcelle: parcelle),
+              builder: (_) => ChangeNotifierProvider.value(
+                value: provider,
+                child: ParcelleDetailsScreen(parcelle: parcelle),
+              ),
             ),
           );
         },

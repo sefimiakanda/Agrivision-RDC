@@ -122,9 +122,13 @@ class ParcelleDetailsScreen extends StatelessWidget {
   }
 
   Future<void> _edit(BuildContext context) async {
+    final provider = context.read<ParcelleProvider>();
     await Navigator.of(context).push<void>(
       MaterialPageRoute<void>(
-        builder: (_) => ParcelleFormScreen(parcelle: parcelle),
+        builder: (_) => ChangeNotifierProvider.value(
+          value: provider,
+          child: ParcelleFormScreen(parcelle: parcelle),
+        ),
       ),
     );
   }

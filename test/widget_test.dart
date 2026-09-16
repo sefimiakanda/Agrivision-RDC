@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:agrivision_drc/database/parcelle_repository.dart';
@@ -25,8 +26,9 @@ void main() {
     await tester.tap(find.text('Météo agricole'));
     await tester.pumpAndSettle();
 
+    expect(find.text('Météo agricole'), findsOneWidget);
     expect(
-      find.text('Ce module sera construit dans la prochaine étape.'),
+      find.text('Recherchez une ville pour voir sa météo.'),
       findsOneWidget,
     );
   });
@@ -44,14 +46,44 @@ void main() {
     expect(find.text('Mes parcelles'), findsOneWidget);
     expect(find.text('Aucune parcelle enregistrée'), findsOneWidget);
   });
+
+  testWidgets('enregistre une parcelle depuis le formulaire', (
+    WidgetTester tester,
+  ) async {
+    final repository = EmptyParcelleRepository();
+    await tester.pumpWidget(AgrivisionApp(parcelleRepository: repository));
+
+    await tester.tap(find.text('Carnet agricole'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Ajouter'));
+    await tester.pumpAndSettle();
+
+    final fields = find.byType(TextFormField);
+    await tester.enterText(fields.at(0), 'Parcelle familiale');
+    await tester.enterText(fields.at(1), 'Kinshasa');
+    await tester.enterText(fields.at(2), 'Maïs');
+    await tester.enterText(fields.at(3), '2.5');
+    await tester.tap(find.text('Enregistrer la parcelle'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Mes parcelles'), findsOneWidget);
+    expect(find.text('Parcelle familiale'), findsOneWidget);
+    expect(repository.createdParcelles.single.superficie, 2.5);
+  });
 }
 
 class EmptyParcelleRepository implements ParcelleRepository {
+  final List<Parcelle> createdParcelles = [];
+
   @override
   Future<List<Parcelle>> getParcelles() async => const [];
 
   @override
-  Future<Parcelle> createParcelle(Parcelle parcelle) async => parcelle;
+  Future<Parcelle> createParcelle(Parcelle parcelle) async {
+    final created = parcelle.copyWith(id: createdParcelles.length + 1);
+    createdParcelles.add(created);
+    return created;
+  }
 
   @override
   Future<void> updateParcelle(Parcelle parcelle) async {}

@@ -75,10 +75,16 @@ class _ActivitesView extends StatelessWidget {
   }
 
   Future<void> _openForm(BuildContext context, [Activite? activite]) async {
+    final provider = context.read<ActiviteProvider>();
     await Navigator.of(context).push<void>(
       MaterialPageRoute<void>(
-        builder: (_) =>
-            ActiviteFormScreen(parcelleId: parcelle.id!, activite: activite),
+        builder: (_) => ChangeNotifierProvider.value(
+          value: provider,
+          child: ActiviteFormScreen(
+            parcelleId: parcelle.id!,
+            activite: activite,
+          ),
+        ),
       ),
     );
   }
