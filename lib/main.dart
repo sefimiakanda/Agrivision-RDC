@@ -1,12 +1,19 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 import 'database/database_helper.dart';
 import 'database/parcelle_repository.dart';
+import 'controllers/profile_provider.dart';
+import 'services/gemini_service.dart';
+import 'services/profile_store.dart';
 import 'services/weather_service.dart';
+import 'views/assistant/assistant_screen.dart';
 import 'views/meteo/weather_screen.dart';
 import 'views/parcelles/parcelles_screen.dart';
+import 'views/profile/profile_screen.dart';
 
 const openWeatherApiKey = String.fromEnvironment('OPENWEATHER_API_KEY');
+const geminiApiKey = String.fromEnvironment('GEMINI_API_KEY');
 
 void main() {
   runApp(const AgrivisionApp());
@@ -17,10 +24,14 @@ class AgrivisionApp extends StatelessWidget {
     super.key,
     this.parcelleRepository,
     this.weatherService,
+    this.geminiService,
+    this.profileStore,
   });
 
   final ParcelleRepository? parcelleRepository;
   final WeatherService? weatherService;
+  final GeminiService? geminiService;
+  final ProfileStore? profileStore;
 
   @override
   Widget build(BuildContext context) {
@@ -50,10 +61,16 @@ class AgrivisionApp extends StatelessWidget {
           ),
         ),
       ),
-      home: HomeScreen(
-        parcelleRepository: parcelleRepository ?? DatabaseHelper.instance,
-        weatherService:
-            weatherService ?? WeatherService(apiKey: openWeatherApiKey),
+      home: ChangeNotifierProvider(
+        create: (_) =>
+            ProfileProvider(profileStore ?? SharedPreferencesProfileStore())
+              ..load(),
+        child: HomeScreen(
+          parcelleRepository: parcelleRepository ?? DatabaseHelper.instance,
+          weatherService:
+              weatherService ?? WeatherService(apiKey: openWeatherApiKey),
+          geminiService: geminiService ?? GeminiService(apiKey: geminiApiKey),
+        ),
       ),
     );
   }
@@ -64,10 +81,12 @@ class HomeScreen extends StatelessWidget {
     super.key,
     required this.parcelleRepository,
     required this.weatherService,
+    required this.geminiService,
   });
 
   final ParcelleRepository parcelleRepository;
   final WeatherService weatherService;
+  final GeminiService geminiService;
 
   @override
   Widget build(BuildContext context) {
@@ -87,14 +106,16 @@ class HomeScreen extends StatelessWidget {
             ),
           ],
         ),
-        actions: const [
-          Padding(
-            padding: EdgeInsets.only(right: 20),
-            child: CircleAvatar(
+        actions: [
+          IconButton(
+            onPressed: () => _openProfile(context),
+            tooltip: 'Mon profil agricole',
+            icon: const CircleAvatar(
               backgroundColor: Color(0xFFDCEDE3),
               child: Icon(Icons.person_outline, color: Color(0xFF176B4D)),
             ),
           ),
+          const SizedBox(width: 12),
         ],
       ),
       body: ListView(
@@ -140,19 +161,11 @@ class HomeScreen extends StatelessWidget {
             title: 'Assistant agricole',
             description:
                 'Posez vos questions et recevez des conseils en français.',
-            onTap: () => _openModule(context, 'Assistant agricole'),
+            onTap: () => _openAssistant(context),
           ),
           const SizedBox(height: 24),
           const _OfflineNotice(),
         ],
-      ),
-    );
-  }
-
-  void _openModule(BuildContext context, String title) {
-    Navigator.of(context).push(
-      MaterialPageRoute<void>(
-        builder: (_) => ModulePlaceholderScreen(title: title),
       ),
     );
   }
@@ -169,6 +182,23 @@ class HomeScreen extends StatelessWidget {
     Navigator.of(context).push<void>(
       MaterialPageRoute<void>(
         builder: (_) => WeatherScreen(service: weatherService),
+      ),
+    );
+  }
+
+  void _openAssistant(BuildContext context) {
+    Navigator.of(context).push<void>(
+      MaterialPageRoute<void>(
+        builder: (_) => AssistantScreen(service: geminiService),
+      ),
+    );
+  }
+
+  void _openProfile(BuildContext context) {
+    Navigator.of(context).push<void>(
+      MaterialPageRoute<void>(
+        builder: (_) =>
+            ProfileScreen(provider: context.read<ProfileProvider>()),
       ),
     );
   }

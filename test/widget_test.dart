@@ -4,7 +4,10 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:agrivision_drc/database/parcelle_repository.dart';
 import 'package:agrivision_drc/main.dart';
 import 'package:agrivision_drc/models/activite.dart';
+import 'package:agrivision_drc/models/agriculteur_profile.dart';
 import 'package:agrivision_drc/models/parcelle.dart';
+import 'package:agrivision_drc/services/gemini_service.dart';
+import 'package:agrivision_drc/services/profile_store.dart';
 
 void main() {
   testWidgets('affiche les trois modules principaux', (
@@ -70,6 +73,48 @@ void main() {
     expect(find.text('Parcelle familiale'), findsOneWidget);
     expect(repository.createdParcelles.single.superficie, 2.5);
   });
+
+  testWidgets('ouvre le profil agricole depuis l’avatar', (
+    WidgetTester tester,
+  ) async {
+    await tester.pumpWidget(
+      AgrivisionApp(
+        profileStore: EmptyProfileStore(),
+        geminiService: GeminiService(apiKey: ''),
+      ),
+    );
+
+    await tester.tap(find.byTooltip('Mon profil agricole'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Mon profil agricole'), findsOneWidget);
+    expect(find.text('Enregistrer le profil'), findsOneWidget);
+  });
+
+  testWidgets('ouvre l’assistant agricole depuis l’accueil', (
+    WidgetTester tester,
+  ) async {
+    await tester.pumpWidget(
+      AgrivisionApp(
+        profileStore: EmptyProfileStore(),
+        geminiService: GeminiService(apiKey: ''),
+      ),
+    );
+
+    await tester.tap(find.text('Assistant agricole'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Votre assistant agricole'), findsOneWidget);
+    expect(find.byTooltip('Envoyer la question'), findsOneWidget);
+  });
+}
+
+class EmptyProfileStore implements ProfileStore {
+  @override
+  Future<AgriculteurProfile> load() async => const AgriculteurProfile();
+
+  @override
+  Future<void> save(AgriculteurProfile profile) async {}
 }
 
 class EmptyParcelleRepository implements ParcelleRepository {
