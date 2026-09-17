@@ -62,8 +62,13 @@ Question de l’agriculteur : $normalizedQuestion$context''';
           )
           .timeout(const Duration(seconds: 20));
 
-      if (response.statusCode == 401 || response.statusCode == 403) {
-        throw const GeminiException('La clé Gemini est invalide ou refusée.');
+      if (response.statusCode == 400 ||
+          response.statusCode == 401 ||
+          response.statusCode == 403) {
+        final message = _extractApiError(response.body);
+        throw GeminiException(
+          message ?? 'La clé Gemini est invalide ou refusée.',
+        );
       }
       if (response.statusCode < 200 || response.statusCode >= 300) {
         throw const GeminiException(
@@ -96,6 +101,26 @@ Question de l’agriculteur : $normalizedQuestion$context''';
         'L’assistant est momentanément indisponible. Réessayez plus tard.',
       );
     }
+  }
+
+  String? _extractApiError(String body) {
+    try {
+      final decoded = jsonDecode(body);
+      if (decoded is! Map<String, dynamic>) {
+        return null;
+      }
+      final error = decoded['error'];
+      if (error is! Map<String, dynamic>) {
+        return null;
+      }
+      final message = error['message'];
+      if (message is String && message.isNotEmpty) {
+        return message;
+      }
+    } catch (_) {
+      return null;
+    }
+    return null;
   }
 }
 
