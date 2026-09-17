@@ -65,12 +65,76 @@ class AgrivisionApp extends StatelessWidget {
         create: (_) =>
             ProfileProvider(profileStore ?? SharedPreferencesProfileStore())
               ..load(),
-        child: HomeScreen(
+        child: MainNavigationShell(
           parcelleRepository: parcelleRepository ?? DatabaseHelper.instance,
           weatherService:
               weatherService ?? WeatherService(apiKey: openWeatherApiKey),
           geminiService: geminiService ?? GeminiService(apiKey: geminiApiKey),
         ),
+      ),
+    );
+  }
+}
+
+class MainNavigationShell extends StatefulWidget {
+  const MainNavigationShell({
+    super.key,
+    required this.parcelleRepository,
+    required this.weatherService,
+    required this.geminiService,
+  });
+
+  final ParcelleRepository parcelleRepository;
+  final WeatherService weatherService;
+  final GeminiService geminiService;
+
+  @override
+  State<MainNavigationShell> createState() => _MainNavigationShellState();
+}
+
+class _MainNavigationShellState extends State<MainNavigationShell> {
+  int _selectedIndex = 0;
+
+  @override
+  Widget build(BuildContext context) {
+    final pages = <Widget>[
+      HomeScreen(
+        parcelleRepository: widget.parcelleRepository,
+        weatherService: widget.weatherService,
+        geminiService: widget.geminiService,
+      ),
+      ParcellesScreen(repository: widget.parcelleRepository),
+      WeatherScreen(service: widget.weatherService),
+      AssistantScreen(service: widget.geminiService),
+    ];
+
+    return Scaffold(
+      body: IndexedStack(index: _selectedIndex, children: pages),
+      bottomNavigationBar: NavigationBar(
+        selectedIndex: _selectedIndex,
+        onDestinationSelected: (value) => setState(() => _selectedIndex = value),
+        destinations: const [
+          NavigationDestination(
+            icon: Icon(Icons.home_outlined),
+            selectedIcon: Icon(Icons.home),
+            label: 'Accueil',
+          ),
+          NavigationDestination(
+            icon: Icon(Icons.menu_book_outlined),
+            selectedIcon: Icon(Icons.menu_book),
+            label: 'Carnet',
+          ),
+          NavigationDestination(
+            icon: Icon(Icons.cloud_outlined),
+            selectedIcon: Icon(Icons.cloud),
+            label: 'Météo',
+          ),
+          NavigationDestination(
+            icon: Icon(Icons.chat_bubble_outline),
+            selectedIcon: Icon(Icons.chat_bubble),
+            label: 'Assistant',
+          ),
+        ],
       ),
     );
   }
@@ -93,18 +157,9 @@ class HomeScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         titleSpacing: 20,
-        title: const Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Bonjour, agriculteur',
-              style: TextStyle(fontSize: 14, fontWeight: FontWeight.w400),
-            ),
-            Text(
-              'Agrivision RDC',
-              style: TextStyle(fontSize: 22, fontWeight: FontWeight.w800),
-            ),
-          ],
+        title: const Text(
+          'Agrivision RDC',
+          style: TextStyle(fontSize: 22, fontWeight: FontWeight.w800),
         ),
         actions: [
           IconButton(
@@ -122,48 +177,55 @@ class HomeScreen extends StatelessWidget {
         padding: const EdgeInsets.fromLTRB(20, 12, 20, 28),
         children: [
           const _WelcomeBanner(),
-          const SizedBox(height: 24),
+          const SizedBox(height: 18),
           Text(
-            'Vos outils agricoles',
-            style: Theme.of(context).textTheme.titleLarge?.copyWith(
-              fontWeight: FontWeight.w800,
+            'Aujourd’hui, votre exploitation est au centre de votre activité.',
+            style: Theme.of(context).textTheme.titleMedium?.copyWith(
               color: const Color(0xFF17352B),
+              fontWeight: FontWeight.w600,
             ),
           ),
-          const SizedBox(height: 12),
-          _FeatureCard(
-            key: const ValueKey('carnet-card'),
-            icon: Icons.menu_book_outlined,
-            color: const Color(0xFFE2F1E5),
-            iconColor: const Color(0xFF176B4D),
-            title: 'Carnet agricole',
-            description:
-                'Gérez vos parcelles et gardez l’historique de vos activités.',
-            onTap: () => _openCarnet(context),
+          const SizedBox(height: 18),
+          Center(
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(28),
+              child: Image.asset(
+                'assets/icon/icone.png',
+                width: 180,
+                height: 180,
+                fit: BoxFit.contain,
+              ),
+            ),
           ),
-          const SizedBox(height: 12),
-          _FeatureCard(
-            key: const ValueKey('weather-card'),
-            icon: Icons.wb_sunny_outlined,
-            color: const Color(0xFFFFEED8),
-            iconColor: const Color(0xFFB86B18),
-            title: 'Météo agricole',
-            description:
-                'Consultez les conditions et prévisions de votre ville.',
-            onTap: () => _openWeather(context),
+          const SizedBox(height: 18),
+          Consumer<ProfileProvider>(
+            builder: (context, profileProvider, _) {
+              final name = profileProvider.profile.name.trim();
+              final city = profileProvider.profile.city.trim();
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Bonjour, ${name.isEmpty ? 'agriculteur' : name}',
+                    style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                      color: const Color(0xFF17352B),
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                  const SizedBox(height: 6),
+                  if (city.isNotEmpty)
+                    Text(
+                      'Votre zone : $city',
+                      style: const TextStyle(
+                        color: Color(0xFF63746B),
+                        fontSize: 15,
+                      ),
+                    ),
+                ],
+              );
+            },
           ),
-          const SizedBox(height: 12),
-          _FeatureCard(
-            key: const ValueKey('assistant-card'),
-            icon: Icons.chat_bubble_outline,
-            color: const Color(0xFFE5E5F8),
-            iconColor: const Color(0xFF4D4B91),
-            title: 'Assistant agricole',
-            description:
-                'Posez vos questions et recevez des conseils en français.',
-            onTap: () => _openAssistant(context),
-          ),
-          const SizedBox(height: 24),
+          const SizedBox(height: 20),
           const _OfflineNotice(),
         ],
       ),
