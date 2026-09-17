@@ -29,8 +29,6 @@ class _ProfileViewState extends State<_ProfileView> {
   final _formKey = GlobalKey<FormState>();
   late final TextEditingController _nameController;
   late final TextEditingController _cityController;
-  late final TextEditingController _cultureController;
-  late final TextEditingController _sizeController;
 
   @override
   void initState() {
@@ -38,18 +36,12 @@ class _ProfileViewState extends State<_ProfileView> {
     final profile = context.read<ProfileProvider>().profile;
     _nameController = TextEditingController(text: profile.name);
     _cityController = TextEditingController(text: profile.city);
-    _cultureController = TextEditingController(text: profile.mainCulture);
-    _sizeController = TextEditingController(
-      text: profile.farmSize > 0 ? profile.farmSize.toString() : '',
-    );
   }
 
   @override
   void dispose() {
     _nameController.dispose();
     _cityController.dispose();
-    _cultureController.dispose();
-    _sizeController.dispose();
     super.dispose();
   }
 
@@ -87,7 +79,7 @@ class _ProfileViewState extends State<_ProfileView> {
                 ),
                 const SizedBox(height: 8),
                 const Text(
-                  'Ces informations restent sur votre appareil et peuvent aider l’assistant à personnaliser ses conseils.',
+                  'Ces informations restent sur votre appareil pour personnaliser les échanges avec l’assistant.',
                   textAlign: TextAlign.center,
                   style: TextStyle(color: Color(0xFF63746B), height: 1.4),
                 ),
@@ -98,26 +90,6 @@ class _ProfileViewState extends State<_ProfileView> {
                   _cityController,
                   'Ville ou territoire',
                   Icons.location_on_outlined,
-                ),
-                const SizedBox(height: 14),
-                _field(_cultureController, 'Culture principale', Icons.grass),
-                const SizedBox(height: 14),
-                _field(
-                  _sizeController,
-                  'Superficie totale (hectares)',
-                  Icons.square_foot,
-                  keyboardType: const TextInputType.numberWithOptions(
-                    decimal: true,
-                  ),
-                  validator: (value) {
-                    if (value == null || value.trim().isEmpty) return null;
-                    final size = double.tryParse(
-                      value.trim().replaceAll(',', '.'),
-                    );
-                    return size == null || size < 0
-                        ? 'Saisissez un nombre valide.'
-                        : null;
-                  },
                 ),
                 const SizedBox(height: 28),
                 FilledButton.icon(
@@ -168,13 +140,9 @@ class _ProfileViewState extends State<_ProfileView> {
 
   Future<void> _save() async {
     if (!_formKey.currentState!.validate()) return;
-    final size =
-        double.tryParse(_sizeController.text.trim().replaceAll(',', '.')) ?? 0;
     final profile = AgriculteurProfile(
       name: _nameController.text.trim(),
       city: _cityController.text.trim(),
-      mainCulture: _cultureController.text.trim(),
-      farmSize: size,
     );
     final saved = await context.read<ProfileProvider>().save(profile);
     if (saved && mounted) Navigator.of(context).pop();
