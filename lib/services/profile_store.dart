@@ -24,11 +24,13 @@ class SharedPreferencesProfileStore implements ProfileStore {
   @override
   Future<AgriculteurProfile> load() async {
     final preferences = await _prefs;
+    final legacyCulture = preferences.getString(_cultureKey) ?? '';
+    final legacyFarmSize = preferences.getDouble(_farmSizeKey) ?? 0;
     return AgriculteurProfile(
       name: preferences.getString(_nameKey) ?? '',
       city: preferences.getString(_cityKey) ?? '',
-      mainCulture: preferences.getString(_cultureKey) ?? '',
-      farmSize: preferences.getDouble(_farmSizeKey) ?? 0,
+      mainCulture: legacyCulture,
+      farmSize: legacyFarmSize,
     );
   }
 
