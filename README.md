@@ -1,76 +1,91 @@
 # Agrivision RDC
 
-Application Flutter d'aide à la gestion des cultures et au conseil agricole en République Démocratique du Congo.
+## Objectif
 
-## Fonctionnalités disponibles
+Agrivision RDC est une application mobile Flutter d'aide à la gestion des cultures destinée aux petits exploitants de la République démocratique du Congo. Elle centralise le suivi des parcelles, les activités agricoles, la météo locale et des conseils agricoles en français.
 
-- Carnet agricole hors connexion avec SQLite : parcelles et activités.
-- Météo agricole : conditions actuelles et prévisions OpenWeatherMap.
-- Assistant agricole Gemini : questions et conseils en français, avec fallback de modèle.
-- Profil agricole local : nom de l’agriculteur et ville.
-- Accueil personnalisé avec l’icône de l’application et des badges météo.
-- Navigation mobile inférieure : Accueil, Carnet, Météo et Assistant.
+## Fonctionnalités principales
 
-## Prérequis
+- Gestion d'un profil agricole : nom, ville, culture principale et superficie de l'exploitation.
+- Carnet agricole hors connexion : création, modification et suppression de parcelles et de leurs activités.
+- Consultation des conditions météorologiques actuelles et de prévisions pour une ville donnée.
+- Assistant agricole basé sur Gemini, avec prise en compte de l'historique récent de la conversation.
+- Accueil personnalisé avec la météo de la ville renseignée dans le profil.
+- Navigation entre l'accueil, le carnet, la météo et l'assistant.
 
-- Flutter stable et Dart compatibles avec le SDK du projet.
-- Android Studio avec un JDK embarqué pour compiler Android.
-- Un appareil Android ou un émulateur visible avec `flutter devices`.
+## Technologies et packages utilisés
 
-Sur Windows, si Java n’est pas disponible dans le terminal :
+- Flutter et Dart
+- `provider` : gestion d'état
+- `sqflite` et `path` : base de données SQLite locale
+- `shared_preferences` : persistance du profil agricole
+- `http` : appels aux API OpenWeatherMap et Gemini
+- `intl` : formatage des dates et informations localisées
+- `flutter_launcher_icons` : génération des icônes de l'application
+- `flutter_test` et `flutter_lints` : tests et qualité du code
 
-```powershell
-$env:JAVA_HOME = 'M:\Android Studio install\jbr'
-$env:PATH = "$env:JAVA_HOME\bin;$env:PATH"
-```
+## Installation
 
-## Lancer l’application
+### Prérequis
 
-Installer les dépendances puis lancer Flutter :
+- Flutter stable et un SDK Dart compatible (le projet requiert Dart `^3.12.0`).
+- Android Studio ou un environnement Flutter configuré avec un émulateur ou un appareil mobile.
+- Une clé API OpenWeatherMap et une clé API Gemini pour utiliser la météo et l'assistant.
+
+Clonez le dépôt, placez-vous à sa racine, puis installez les dépendances :
 
 ```powershell
 flutter pub get
-flutter run --dart-define=OPENWEATHER_API_KEY=votre_cle_openweathermap --dart-define=GEMINI_API_KEY=votre_cle_gemini
 ```
 
-Les clés météo et Gemini sont injectées au lancement et ne sont pas stockées dans le dépôt. Une clé Gemini doit être active pour l’API Generative Language et autorisée à utiliser un modèle `generateContent`. L’application essaie `gemini-2.5-flash`, puis `gemini-2.5-flash-lite` et enfin `gemini-2.0-flash` si un modèle n’est pas disponible.
+Les clés API ne doivent jamais être ajoutées au code source ni au dépôt Git.
 
-Pour vérifier l’appareil et éviter les caches Android corrompus :
+## Lancement de l’application
+
+Vérifiez qu'un appareil ou un émulateur est disponible :
 
 ```powershell
 flutter devices
-flutter clean
-flutter pub get
+```
+
+Lancez ensuite l'application en transmettant les clés au démarrage :
+
+```powershell
 flutter run --dart-define=OPENWEATHER_API_KEY=votre_cle_openweathermap --dart-define=GEMINI_API_KEY=votre_cle_gemini
 ```
 
-Ne placez jamais une clé réelle dans `README.md`, le code source ou un commit Git. Si une clé a été publiée, révoquez-la et créez-en une nouvelle.
+En cas de problème de cache, exécutez `flutter clean`, puis `flutter pub get` avant de relancer la commande.
 
-## Tests et vérifications
+## Tests réalisés
 
-Les tests sont organisés en trois niveaux :
+Les tests couvrent notamment :
 
-- Tests unitaires Gemini : parsing de réponse, refus de clé et fallback de modèle.
-- Tests unitaires météo : parsing des conditions/prévisions et ville inconnue.
-- Tests widget : navigation inférieure, accueil personnalisé, profil et carnet.
+- Le parsing des données météo et le traitement d'une ville introuvable.
+- Les réponses Gemini, les erreurs de clé et le basculement vers un modèle compatible.
+- Le chargement et l'enregistrement du profil agricole.
+- Les cycles de création, modification et suppression des parcelles et activités.
+- Les principaux parcours de l'interface : navigation, profil, carnet et assistant.
+
+Pour les exécuter :
 
 ```powershell
 flutter analyze
 flutter test
-flutter test test/gemini_service_test.dart
-flutter test test/weather_service_test.dart
-flutter test test/widget_test.dart
 ```
 
-La commande `flutter build apk --debug` valide aussi la compilation Android, mais ne remplace pas un lancement sur appareil réel.
+## Captures d’écran
 
-## Structure principale
+Icône de l'application :
 
-```text
-lib/
-  controllers/   # Provider par domaine
-  database/      # Repository et SQLite
-  models/        # Modèles métier
-  services/      # APIs distantes
-  views/         # Écrans Flutter
-```
+![Icône Agrivision RDC](assets/icon/icone.png)
+
+## Difficultés rencontrées
+
+- Protéger les clés des services externes en les injectant avec `--dart-define` plutôt qu'en les stockant dans le projet.
+- Prévoir l'indisponibilité de certains modèles Gemini : l'application essaie successivement plusieurs modèles compatibles.
+- Conserver l'accès au carnet agricole sans connexion grâce à SQLite, tout en distinguant les fonctionnalités qui nécessitent Internet, comme la météo et l'assistant.
+- Gérer proprement les erreurs réseau, les clés invalides et les villes non trouvées pour fournir des messages compréhensibles à l'utilisateur.
+
+## Auteur
+
+Fidèle Miakanda
