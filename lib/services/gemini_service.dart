@@ -18,7 +18,11 @@ class GeminiService {
   final String apiKey;
   final http.Client _client;
   static const _baseUrl = 'generativelanguage.googleapis.com';
-  static const _model = 'gemini-2.0-flash';
+  static const _models = [
+    'gemini-2.5-flash',
+    'gemini-2.5-flash-lite',
+    'gemini-2.0-flash',
+  ];
 
   Future<String> ask({
     required String question,
@@ -43,51 +47,67 @@ Ne prétends pas remplacer un agronome. Pour les produits phytosanitaires, recom
 Question de l’agriculteur : $normalizedQuestion$context''';
 
     try {
-      final response = await _client
-          .post(
-            Uri.https(_baseUrl, '/v1beta/models/$_model:generateContent', {
-              'key': apiKey,
-            }),
-            headers: {'Content-Type': 'application/json'},
-            body: jsonEncode({
-              'contents': [
-                {
-                  'parts': [
-                    {'text': prompt},
-                  ],
+      GeminiException? lastModelError;
+      for (final model in _models) {
+        final response = await _client
+            .post(
+              Uri.https(_baseUrl, '/v1beta/models/$model:generateContent', {
+                'key': apiKey,
+              }),
+              headers: {'Content-Type': 'application/json'},
+              body: jsonEncode({
+                'contents': [
+                  {
+                    'parts': [
+                      {'text': prompt},
+                    ],
+                  },
+                ],
+                'generationConfig': {
+                  'temperature': 0.4,
+                  'maxOutputTokens': 500,
                 },
-              ],
-              'generationConfig': {'temperature': 0.4, 'maxOutputTokens': 500},
-            }),
-          )
-          .timeout(const Duration(seconds: 20));
+              }),
+            )
+            .timeout(const Duration(seconds: 20));
 
-      if (response.statusCode == 400 ||
-          response.statusCode == 401 ||
-          response.statusCode == 403) {
-        final message = _extractApiError(response.body);
-        throw GeminiException(
-          message ?? 'La clé Gemini est invalide ou refusée.',
-        );
-      }
-      if (response.statusCode < 200 || response.statusCode >= 300) {
-        throw const GeminiException(
-          'Gemini est momentanément indisponible. Réessayez plus tard.',
-        );
-      }
+        if (response.statusCode == 400 ||
+            response.statusCode == 404 ||
+            response.statusCode == 401 ||
+            response.statusCode == 403) {
+          final message = _extractApiError(response.body);
+          if (_isModelUnavailable(message) && model != _models.last) {
+            lastModelError = GeminiException(message!);
+            continue;
+          }
+          throw GeminiException(
+            _friendlyApiError(message) ??
+                'La clé Gemini est invalide ou refusée.',
+          );
+        }
+        if (response.statusCode < 200 || response.statusCode >= 300) {
+          throw GeminiException(
+            'Gemini a répondu avec le code ${response.statusCode}. Réessayez dans un instant.',
+          );
+        }
 
-      final data = jsonDecode(response.body) as Map<String, dynamic>;
-      final candidates = data['candidates'] as List<dynamic>? ?? const [];
-      final firstCandidate = candidates.firstOrNull as Map<String, dynamic>?;
-      final content = firstCandidate?['content'] as Map<String, dynamic>?;
-      final parts = content?['parts'] as List<dynamic>? ?? const [];
-      final text = parts.firstOrNull is Map<String, dynamic>
-          ? (parts.first as Map<String, dynamic>)['text'] as String?
-          : null;
-      if (text == null || text.trim().isEmpty) {
-        throw const GeminiException('Gemini n’a pas renvoyé de réponse.');
+        final data = jsonDecode(response.body) as Map<String, dynamic>;
+        final candidates = data['candidates'] as List<dynamic>? ?? const [];
+        final firstCandidate = candidates.firstOrNull as Map<String, dynamic>?;
+        final content = firstCandidate?['content'] as Map<String, dynamic>?;
+        final parts = content?['parts'] as List<dynamic>? ?? const [];
+        final text = parts.firstOrNull is Map<String, dynamic>
+            ? (parts.first as Map<String, dynamic>)['text'] as String?
+            : null;
+        if (text == null || text.trim().isEmpty) {
+          throw const GeminiException('Gemini n’a pas renvoyé de réponse.');
+        }
+        return text.trim();
       }
-      return text.trim();
+      throw lastModelError ??
+          const GeminiException(
+            'Aucun modèle Gemini compatible n’est disponible.',
+          );
     } on GeminiException {
       rethrow;
     } on http.ClientException {
@@ -121,6 +141,28 @@ Question de l’agriculteur : $normalizedQuestion$context''';
       return null;
     }
     return null;
+  }
+
+  bool _isModelUnavailable(String? message) {
+    final normalized = message?.toLowerCase() ?? '';
+    return normalized.contains('model') &&
+        (normalized.contains('not found') ||
+            normalized.contains('not supported') ||
+            normalized.contains('does not exist'));
+  }
+
+  String? _friendlyApiError(String? message) {
+    if (message == null || message.isEmpty) {
+      return null;
+    }
+    final normalized = message.toLowerCase();
+    if (normalized.contains('api key') || normalized.contains('api_key')) {
+      return 'La clé Gemini est invalide ou refusée. Vérifiez votre clé et son accès à l’API Gemini.';
+    }
+    if (_isModelUnavailable(message)) {
+      return 'Aucun modèle Gemini compatible n’est disponible pour cette clé.';
+    }
+    return message;
   }
 }
 
