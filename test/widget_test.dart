@@ -16,9 +16,23 @@ void main() {
     await tester.pumpWidget(const AgrivisionApp());
 
     expect(find.text('Agrivision RDC'), findsOneWidget);
-    expect(find.text('Carnet agricole'), findsOneWidget);
-    expect(find.text('Météo agricole'), findsOneWidget);
-    expect(find.text('Assistant agricole'), findsOneWidget);
+    expect(find.text('Accueil'), findsOneWidget);
+    expect(find.text('Carnet'), findsOneWidget);
+    expect(find.text('Météo'), findsOneWidget);
+    expect(find.text('Assistant'), findsOneWidget);
+  });
+
+  testWidgets('affiche le nom de l’agriculteur sur l’accueil', (
+    WidgetTester tester,
+  ) async {
+    await tester.pumpWidget(
+      AgrivisionApp(
+        profileStore: NamedProfileStore(name: 'Aminata', city: 'Kinshasa'),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('Bonjour, Aminata'), findsOneWidget);
   });
 
   testWidgets('ouvre le module météo depuis l’accueil', (
@@ -26,7 +40,7 @@ void main() {
   ) async {
     await tester.pumpWidget(const AgrivisionApp());
 
-    await tester.tap(find.text('Météo agricole'));
+    await tester.tap(find.text('Météo'));
     await tester.pumpAndSettle();
 
     expect(find.text('Météo agricole'), findsOneWidget);
@@ -43,7 +57,7 @@ void main() {
       AgrivisionApp(parcelleRepository: EmptyParcelleRepository()),
     );
 
-    await tester.tap(find.text('Carnet agricole'));
+    await tester.tap(find.text('Carnet'));
     await tester.pumpAndSettle();
 
     expect(find.text('Mes parcelles'), findsOneWidget);
@@ -56,7 +70,7 @@ void main() {
     final repository = EmptyParcelleRepository();
     await tester.pumpWidget(AgrivisionApp(parcelleRepository: repository));
 
-    await tester.tap(find.text('Carnet agricole'));
+    await tester.tap(find.text('Carnet'));
     await tester.pumpAndSettle();
     await tester.tap(find.text('Ajouter'));
     await tester.pumpAndSettle();
@@ -101,12 +115,28 @@ void main() {
       ),
     );
 
-    await tester.tap(find.text('Assistant agricole'));
+    await tester.tap(find.text('Assistant'));
     await tester.pumpAndSettle();
 
     expect(find.text('Votre assistant agricole'), findsOneWidget);
     expect(find.byTooltip('Envoyer la question'), findsOneWidget);
   });
+}
+
+class NamedProfileStore implements ProfileStore {
+  NamedProfileStore({required this.name, required this.city});
+
+  final String name;
+  final String city;
+
+  @override
+  Future<AgriculteurProfile> load() async => AgriculteurProfile(
+    name: name,
+    city: city,
+  );
+
+  @override
+  Future<void> save(AgriculteurProfile profile) async {}
 }
 
 class EmptyProfileStore implements ProfileStore {

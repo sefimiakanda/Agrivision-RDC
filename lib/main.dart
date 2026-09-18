@@ -4,6 +4,8 @@ import 'package:provider/provider.dart';
 import 'database/database_helper.dart';
 import 'database/parcelle_repository.dart';
 import 'controllers/profile_provider.dart';
+import 'controllers/weather_provider.dart';
+import 'models/weather.dart';
 import 'services/gemini_service.dart';
 import 'services/profile_store.dart';
 import 'services/weather_service.dart';
@@ -110,31 +112,56 @@ class _MainNavigationShellState extends State<MainNavigationShell> {
 
     return Scaffold(
       body: IndexedStack(index: _selectedIndex, children: pages),
-      bottomNavigationBar: NavigationBar(
-        selectedIndex: _selectedIndex,
-        onDestinationSelected: (value) => setState(() => _selectedIndex = value),
-        destinations: const [
-          NavigationDestination(
-            icon: Icon(Icons.home_outlined),
-            selectedIcon: Icon(Icons.home),
-            label: 'Accueil',
+      bottomNavigationBar: SafeArea(
+        top: false,
+        child: Container(
+          margin: const EdgeInsets.fromLTRB(12, 0, 12, 10),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(24),
+            border: Border.all(color: const Color(0xFFDDE8DE)),
+            boxShadow: const [
+              BoxShadow(
+                color: Color(0x180F3D2B),
+                blurRadius: 18,
+                offset: Offset(0, 7),
+              ),
+            ],
           ),
-          NavigationDestination(
-            icon: Icon(Icons.menu_book_outlined),
-            selectedIcon: Icon(Icons.menu_book),
-            label: 'Carnet',
+          child: NavigationBar(
+            height: 72,
+            backgroundColor: Colors.transparent,
+            surfaceTintColor: Colors.transparent,
+            elevation: 0,
+            indicatorColor: const Color(0xFFDDF0DF),
+            selectedIndex: _selectedIndex,
+            onDestinationSelected: (value) =>
+                setState(() => _selectedIndex = value),
+            labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
+            destinations: const [
+              NavigationDestination(
+                icon: Icon(Icons.home_outlined),
+                selectedIcon: Icon(Icons.home),
+                label: 'Accueil',
+              ),
+              NavigationDestination(
+                icon: Icon(Icons.menu_book_outlined),
+                selectedIcon: Icon(Icons.menu_book),
+                label: 'Carnet',
+              ),
+              NavigationDestination(
+                icon: Icon(Icons.cloud_outlined),
+                selectedIcon: Icon(Icons.cloud),
+                label: 'Météo',
+              ),
+              NavigationDestination(
+                icon: Icon(Icons.chat_bubble_outline),
+                selectedIcon: Icon(Icons.chat_bubble),
+                label: 'Assistant',
+              ),
+            ],
           ),
-          NavigationDestination(
-            icon: Icon(Icons.cloud_outlined),
-            selectedIcon: Icon(Icons.cloud),
-            label: 'Météo',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.chat_bubble_outline),
-            selectedIcon: Icon(Icons.chat_bubble),
-            label: 'Assistant',
-          ),
-        ],
+        ),
       ),
     );
   }
@@ -225,33 +252,19 @@ class HomeScreen extends StatelessWidget {
               );
             },
           ),
+          const SizedBox(height: 24),
+          Consumer<ProfileProvider>(
+            builder: (context, profileProvider, _) {
+              return _HomeWeatherCard(
+                key: ValueKey(profileProvider.profile.city),
+                city: profileProvider.profile.city,
+                service: weatherService,
+              );
+            },
+          ),
           const SizedBox(height: 20),
           const _OfflineNotice(),
         ],
-      ),
-    );
-  }
-
-  void _openCarnet(BuildContext context) {
-    Navigator.of(context).push<void>(
-      MaterialPageRoute<void>(
-        builder: (_) => ParcellesScreen(repository: parcelleRepository),
-      ),
-    );
-  }
-
-  void _openWeather(BuildContext context) {
-    Navigator.of(context).push<void>(
-      MaterialPageRoute<void>(
-        builder: (_) => WeatherScreen(service: weatherService),
-      ),
-    );
-  }
-
-  void _openAssistant(BuildContext context) {
-    Navigator.of(context).push<void>(
-      MaterialPageRoute<void>(
-        builder: (_) => AssistantScreen(service: geminiService),
       ),
     );
   }
@@ -299,82 +312,204 @@ class _WelcomeBanner extends StatelessWidget {
               ],
             ),
           ),
-          const Icon(Icons.eco_outlined, size: 64, color: Color(0xFFB9E4C7)),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(18),
+            child: Image.asset(
+              'assets/icon/icone.png',
+              width: 66,
+              height: 66,
+              fit: BoxFit.cover,
+            ),
+          ),
         ],
       ),
     );
   }
 }
 
-class _FeatureCard extends StatelessWidget {
-  const _FeatureCard({
+class _HomeWeatherCard extends StatelessWidget {
+  const _HomeWeatherCard({
     super.key,
-    required this.icon,
-    required this.color,
-    required this.iconColor,
-    required this.title,
-    required this.description,
-    required this.onTap,
+    required this.city,
+    required this.service,
   });
 
-  final IconData icon;
-  final Color color;
-  final Color iconColor;
-  final String title;
-  final String description;
-  final VoidCallback onTap;
+  final String city;
+  final WeatherService service;
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      child: InkWell(
-        onTap: onTap,
+    if (city.trim().isEmpty) {
+      return const _WeatherBadgePrompt();
+    }
+    return ChangeNotifierProvider(
+      create: (_) => WeatherProvider(service)..search(city),
+      child: Consumer<WeatherProvider>(
+        builder: (context, provider, _) {
+          if (provider.isLoading) {
+            return const _WeatherBadgeLoading();
+          }
+          if (provider.weather == null) {
+            return const _WeatherBadgePrompt();
+          }
+          return _WeatherBadgeContent(weather: provider.weather!);
+        },
+      ),
+    );
+  }
+}
+
+class _WeatherBadgePrompt extends StatelessWidget {
+  const _WeatherBadgePrompt();
+
+  @override
+  Widget build(BuildContext context) {
+    return _HomeSection(
+      icon: Icons.cloud_outlined,
+      title: 'Météo de votre exploitation',
+      child: const Text(
+        'Ajoutez votre ville dans le profil pour afficher les conditions du jour.',
+        style: TextStyle(color: Color(0xFF63746B), height: 1.35),
+      ),
+    );
+  }
+}
+
+class _WeatherBadgeLoading extends StatelessWidget {
+  const _WeatherBadgeLoading();
+
+  @override
+  Widget build(BuildContext context) {
+    return _HomeSection(
+      icon: Icons.cloud_sync_outlined,
+      title: 'Météo de votre exploitation',
+      child: const LinearProgressIndicator(minHeight: 4),
+    );
+  }
+}
+
+class _WeatherBadgeContent extends StatelessWidget {
+  const _WeatherBadgeContent({required this.weather});
+
+  final Weather weather;
+
+  @override
+  Widget build(BuildContext context) {
+    return _HomeSection(
+      icon: Icons.wb_sunny_outlined,
+      title: 'Météo à ${weather.city}',
+      child: Wrap(
+        spacing: 8,
+        runSpacing: 8,
+        children: [
+          _WeatherBadge(
+            icon: Icons.thermostat_outlined,
+            label: '${weather.temperature.round()}°C',
+            color: const Color(0xFFFFE6C4),
+          ),
+          _WeatherBadge(
+            icon: Icons.water_drop_outlined,
+            label: '${weather.humidity}% humidité',
+            color: const Color(0xFFDCEFF2),
+          ),
+          _WeatherBadge(
+            icon: Icons.umbrella_outlined,
+            label: '${weather.rain.toStringAsFixed(1)} mm pluie',
+            color: const Color(0xFFE7E1F4),
+          ),
+          _WeatherBadge(
+            icon: Icons.agriculture_outlined,
+            label: _capitalize(weather.description),
+            color: const Color(0xFFDDF0DF),
+          ),
+        ],
+      ),
+    );
+  }
+
+  String _capitalize(String value) {
+    if (value.isEmpty) return value;
+    return value[0].toUpperCase() + value.substring(1);
+  }
+}
+
+class _HomeSection extends StatelessWidget {
+  const _HomeSection({
+    required this.icon,
+    required this.title,
+    required this.child,
+  });
+
+  final IconData icon;
+  final String title;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
         borderRadius: BorderRadius.circular(20),
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Row(
+        border: Border.all(color: const Color(0xFFDDE8DE)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
             children: [
-              Container(
-                width: 52,
-                height: 52,
-                decoration: BoxDecoration(
-                  color: color,
-                  borderRadius: BorderRadius.circular(16),
+              Icon(icon, color: const Color(0xFF176B4D)),
+              const SizedBox(width: 8),
+              Text(
+                title,
+                style: const TextStyle(
+                  color: Color(0xFF17352B),
+                  fontWeight: FontWeight.w800,
                 ),
-                child: Icon(icon, color: iconColor, size: 28),
-              ),
-              const SizedBox(width: 14),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      title,
-                      style: const TextStyle(
-                        color: Color(0xFF17352B),
-                        fontSize: 17,
-                        fontWeight: FontWeight.w800,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      description,
-                      style: const TextStyle(
-                        color: Color(0xFF63746B),
-                        height: 1.3,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const Icon(
-                Icons.arrow_forward_ios,
-                size: 16,
-                color: Color(0xFF829189),
               ),
             ],
           ),
-        ),
+          const SizedBox(height: 12),
+          child,
+        ],
+      ),
+    );
+  }
+}
+
+class _WeatherBadge extends StatelessWidget {
+  const _WeatherBadge({
+    required this.icon,
+    required this.label,
+    required this.color,
+  });
+
+  final IconData icon;
+  final String label;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+      decoration: BoxDecoration(
+        color: color,
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 17, color: const Color(0xFF17352B)),
+          const SizedBox(width: 6),
+          Text(
+            label,
+            style: const TextStyle(
+              color: Color(0xFF17352B),
+              fontSize: 12,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+        ],
       ),
     );
   }
