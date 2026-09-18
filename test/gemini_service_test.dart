@@ -34,16 +34,46 @@ void main() {
       ),
     );
   });
+
+  test(
+    'bascule vers un modèle compatible si le modèle principal est absent',
+    () async {
+      final client = FakeGeminiClient(failPrimaryModel: true);
+      final service = GeminiService(apiKey: 'test-key', client: client);
+
+      final answer = await service.ask(
+        question: 'Comment protéger mes plants ?',
+      );
+
+      expect(answer, contains('Arrosez le matin'));
+      expect(client.requestedModels, [
+        'gemini-2.5-flash',
+        'gemini-2.5-flash-lite',
+        'gemini-2.0-flash',
+      ]);
+    },
+  );
 }
 
 class FakeGeminiClient extends http.BaseClient {
-  FakeGeminiClient({this.statusCode = 200});
+  FakeGeminiClient({this.statusCode = 200, this.failPrimaryModel = false});
 
   final int statusCode;
+  final bool failPrimaryModel;
+  final requestedModels = <String>[];
 
   @override
   Future<http.StreamedResponse> send(http.BaseRequest request) async {
-    final body = statusCode == 200
+    final model = request.url.pathSegments[2].split(':').first;
+    requestedModels.add(model);
+    final primaryModelUnavailable =
+        failPrimaryModel && model == 'gemini-2.5-flash';
+    final responseStatus = primaryModelUnavailable ? 404 : statusCode;
+    final body = primaryModelUnavailable
+        ? jsonEncode({
+            'error': {'message': 'Model gemini-2.5-flash not found'},
+          })
+        : responseStatus == 200
         ? jsonEncode({
             'candidates': [
               {
@@ -58,7 +88,7 @@ class FakeGeminiClient extends http.BaseClient {
         : '{}';
     return http.StreamedResponse(
       Stream.value(utf8.encode(body)),
-      statusCode,
+      responseStatus,
       headers: {'content-type': 'application/json'},
       request: request,
     );
