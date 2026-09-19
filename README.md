@@ -83,7 +83,7 @@ Icône de l'application :
 
 Captures d'écrans :
 
-<img src="assets/screenshots/logo.jpeg" alt="Présentation icône Agrivision RDC" width="300"/>
+<img src="assets/screenshots/logo.jpeg" alt="Présentation icône Agrivision RDC" width="100"/>
 
 
 
