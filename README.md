@@ -96,6 +96,11 @@ Captures d'écrans :
   <img src="assets/screenshots/detail_activite.jpeg" alt="Agrivision RDC" width="200"/>
 </p>
 
+<p align="center">
+  <img src="assets/screenshots/activite.jpeg.jpeg" alt="Agrivision RDC" width="200"/>
+  <img src="assets/screenshots/meteo.jpeg.jpeg" alt="Agrivision RDC" width="200"/>
+  <img src="assets/screenshots/meteo2.jpeg.jpeg" alt="Agrivision RDC" width="200"/>
+</p>
 
 ## Difficultés rencontrées
 
