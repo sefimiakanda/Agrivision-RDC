@@ -73,7 +73,7 @@ flutter analyze
 flutter test
 ```
 
-## Captures d’écran
+## Image de l'icône
 
 Icône de l'application :
 
