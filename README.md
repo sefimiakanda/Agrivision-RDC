@@ -79,6 +79,13 @@ Icône de l'application :
 
 ![Icône Agrivision RDC](assets/icon/icone.png)
 
+## Ecran de l'application
+
+Capture d'écrans :
+
+![Icône Agrivision RDC](assets/screenshots/logo.jpeg)
+
+
 ## Difficultés rencontrées
 
 - Protéger les clés des services externes en les injectant avec `--dart-define` plutôt qu'en les stockant dans le projet.
