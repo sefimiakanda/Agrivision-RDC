@@ -90,6 +90,12 @@ Captures d'écrans :
 </p>
 
 
+<p align="center">
+  <img src="assets/screenshots/profil.jpeg" alt="Agrivision RDC" width="200"/>
+  <img src="assets/screenshots/parcelle.jpeg" alt="Agrivision RDC" width="200"/>
+  <img src="assets/screenshots/detail_activite.jpeg" alt="Agrivision RDC" width="200"/>
+</p>
+
 
 ## Difficultés rencontrées
 
