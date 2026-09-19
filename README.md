@@ -85,25 +85,25 @@ Captures d'écrans :
 
 <p align="center">
   <img src="assets/screenshots/logo.jpeg" alt="Logo" width="200"/>
-  <img src="assets/screenshots/acceuil.jpeg" alt="Agrivision RDC" width="200"/>
-  <img src="assets/screenshots/acceuil2.jpeg" alt="Agrivision RDC" width="200"/>
+  <img src="assets/screenshots/acceuil.jpeg" alt="Acceuil 1" width="200"/>
+  <img src="assets/screenshots/acceuil2.jpeg" alt="Acceuil 2" width="200"/>
 </p>
 
 
 <p align="center">
-  <img src="assets/screenshots/profil.jpeg" alt="Agrivision RDC" width="200"/>
-  <img src="assets/screenshots/parcelle.jpeg" alt="Agrivision RDC" width="200"/>
-  <img src="assets/screenshots/detail_activite.jpeg" alt="Agrivision RDC" width="200"/>
+  <img src="assets/screenshots/profil.jpeg" alt="Profil" width="200"/>
+  <img src="assets/screenshots/parcelle.jpeg" alt="Parcelle" width="200"/>
+  <img src="assets/screenshots/detail_activite.jpeg" alt="Détail Parcelle" width="200"/>
 </p>
 
 <p align="center">
-  <img src="assets/screenshots/activite.jpeg" alt="Agrivision RDC" width="200"/>
-  <img src="assets/screenshots/meteo.jpeg" alt="Agrivision RDC" width="200"/>
-  <img src="assets/screenshots/meteo2.jpeg" alt="Agrivision RDC" width="200"/>
+  <img src="assets/screenshots/activite.jpeg" alt="Activité" width="200"/>
+  <img src="assets/screenshots/meteo.jpeg" alt="Météo 1" width="200"/>
+  <img src="assets/screenshots/meteo2.jpeg" alt="Météo 2C" width="200"/>
 </p>
 
 <p align="center">
-<img src="assets/screenshots/assistant.jpeg" alt="Agrivision RDC" width="200"/>
+<img src="assets/screenshots/assistant.jpeg" alt="Assistant IA" width="200"/>
 </p>
 
 ## Difficultés rencontrées
