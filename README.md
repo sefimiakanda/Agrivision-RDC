@@ -6,7 +6,7 @@ Agrivision RDC est une application mobile Flutter d'aide à la gestion des cultu
 
 ## Fonctionnalités principales
 
-- Gestion d'un profil agricole : nom, ville, culture principale et superficie de l'exploitation.
+- Gestion d'un profil agricole : nom et  ville de l'agriculteur.
 - Carnet agricole hors connexion : création, modification et suppression de parcelles et de leurs activités.
 - Consultation des conditions météorologiques actuelles et de prévisions pour une ville donnée.
 - Assistant agricole basé sur Gemini, avec prise en compte de l'historique récent de la conversation.
