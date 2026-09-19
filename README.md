@@ -102,7 +102,9 @@ Captures d'écrans :
   <img src="assets/screenshots/meteo2.jpeg" alt="Agrivision RDC" width="200"/>
 </p>
 
+<p align="center">
 <img src="assets/screenshots/assistant.jpeg" alt="Agrivision RDC" width="200"/>
+</p>
 
 ## Difficultés rencontrées
 
