@@ -102,6 +102,8 @@ Captures d'écrans :
   <img src="assets/screenshots/meteo2.jpeg" alt="Agrivision RDC" width="200"/>
 </p>
 
+<img src="assets/screenshots/assistant.jpeg" alt="Agrivision RDC" width="200"/>
+
 ## Difficultés rencontrées
 
 - Protéger les clés des services externes en les injectant avec `--dart-define` plutôt qu'en les stockant dans le projet.
