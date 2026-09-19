@@ -83,8 +83,11 @@ Icône de l'application :
 
 Captures d'écrans :
 
-<img src="assets/screenshots/logo.jpeg" alt="Agrivision RDC" width="200"/>
-<img src="assets/screenshots/acceuil.jpeg" alt="Agrivision RDC" width="200"/>
+<p align="center">
+  <img src="assets/screenshots/logo.jpeg" alt="Agrivision RDC" width="200"/>
+  <img src="assets/screenshots/acceuil.jpeg" alt="Agrivision RDC" width="200"/>
+  <img src="assets/screenshots/acceuil2.jpeg" alt="Agrivision RDC" width="200"/>
+</p>
 
 
 
